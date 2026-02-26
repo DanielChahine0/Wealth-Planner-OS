@@ -16,12 +16,12 @@ interface AssetAllocationFormProps {
   onBack: () => void;
 }
 
-const ASSET_LABELS: { key: keyof Allocation; label: string; color: string }[] = [
-  { key: "us_equity", label: "US Equity", color: "bg-blue-500" },
-  { key: "intl_equity", label: "Intl Equity", color: "bg-purple-500" },
-  { key: "bonds", label: "Bonds", color: "bg-green-500" },
-  { key: "real_estate", label: "Real Estate", color: "bg-yellow-500" },
-  { key: "cash", label: "Cash", color: "bg-gray-400" },
+const ASSET_LABELS: { key: keyof Allocation; label: string; color: string; barColor: string }[] = [
+  { key: "us_equity",   label: "US Equity",    color: "bg-[#4A7FA5]", barColor: "#4A7FA5" },
+  { key: "intl_equity", label: "Intl Equity",  color: "bg-[#7A5FA5]", barColor: "#7A5FA5" },
+  { key: "bonds",       label: "Bonds",        color: "bg-[#4A8B6A]", barColor: "#4A8B6A" },
+  { key: "real_estate", label: "Real Estate",  color: "bg-gold",      barColor: "#C8A254" },
+  { key: "cash",        label: "Cash",         color: "bg-rim-strong", barColor: "#38383F" },
 ];
 
 const DEFAULT_PCT: Allocation = {
@@ -86,42 +86,45 @@ export function AssetAllocationForm({ defaultValues, onNext, onBack }: AssetAllo
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-mist">
         Set your target asset allocation. Sliders auto-balance — lock any to hold it fixed.
       </p>
 
       {/* Visual allocation bar */}
-      <div className="h-3 rounded-full bg-gray-100 overflow-hidden flex">
-        {ASSET_LABELS.map(({ key, color }) => (
+      <div className="h-2 bg-rim overflow-hidden flex">
+        {ASSET_LABELS.map(({ key, barColor }) => (
           pct[key] > 0 && (
             <div
               key={key}
-              className={`${color} transition-all duration-300 first:rounded-l-full last:rounded-r-full`}
-              style={{ width: `${pct[key]}%` }}
+              className="transition-all duration-300"
+              style={{ width: `${pct[key]}%`, backgroundColor: barColor }}
             />
           )
         ))}
       </div>
 
       <div className="space-y-5">
-        {ASSET_LABELS.map(({ key, label, color }) => (
+        {ASSET_LABELS.map(({ key, label, color, barColor }) => (
           <div key={key} className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span className={`inline-block w-3 h-3 rounded-md ${color} shadow-sm`} />
-                <label className="text-sm font-medium text-gray-700">{label}</label>
+                <span
+                  className="inline-block w-2.5 h-2.5"
+                  style={{ backgroundColor: barColor }}
+                />
+                <label className="text-sm text-parchment">{label}</label>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-gray-900 w-12 text-right tabular-nums">
+                <span className="font-mono text-sm text-parchment w-12 text-right tabular-nums">
                   {pct[key]}%
                 </span>
                 <button
                   type="button"
                   onClick={() => toggleLock(key)}
-                  className={`p-1.5 rounded-md text-xs transition-all ${
+                  className={`p-1.5 text-xs transition-all border ${
                     locked.has(key)
-                      ? "bg-blue-100 text-blue-600 shadow-sm"
-                      : "text-gray-300 hover:text-gray-500 hover:bg-gray-100"
+                      ? "border-gold text-gold bg-gold/10"
+                      : "border-rim text-dust hover:border-rim-strong hover:text-mist"
                   }`}
                   title={locked.has(key) ? "Unlock" : "Lock"}
                 >
@@ -143,28 +146,31 @@ export function AssetAllocationForm({ defaultValues, onNext, onBack }: AssetAllo
               max={100}
               value={pct[key]}
               onChange={(e) => handleChange(key, Number(e.target.value))}
-              className="w-full accent-blue-600 h-2 rounded-full cursor-pointer"
+              className="w-full h-1 cursor-pointer bg-rim appearance-none"
+              style={{ accentColor: barColor }}
             />
           </div>
         ))}
       </div>
 
-      <div className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${
-        isValid ? "bg-green-50/80 border-green-200" : "bg-red-50/80 border-red-200"
+      <div className={`flex items-center justify-between p-4 border transition-colors ${
+        isValid
+          ? "bg-sage-bg border-sage/30 text-sage"
+          : "bg-crimson-bg border-crimson/30 text-crimson"
       }`}>
         <div className="flex items-center gap-2">
           {isValid ? (
-            <svg className="w-4.5 h-4.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           ) : (
-            <svg className="w-4.5 h-4.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
           )}
-          <span className="text-sm font-medium text-gray-700">Total Allocation</span>
+          <span className="text-sm">Total Allocation</span>
         </div>
-        <span className={`text-sm font-bold tabular-nums ${isValid ? "text-green-700" : "text-red-600"}`}>
+        <span className="font-mono text-sm tabular-nums">
           {total}% {!isValid && `(${total > 100 ? "over" : "under"} by ${Math.abs(100 - total)}%)`}
         </span>
       </div>

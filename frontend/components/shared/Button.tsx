@@ -17,19 +17,23 @@ export function Button({
   ...props
 }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer";
+    "inline-flex items-center justify-center font-medium tracking-wide transition-all duration-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-gold focus-visible:ring-offset-1 focus-visible:ring-offset-obsidian disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer";
 
   const variants = {
-    primary: "bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-500 hover:to-blue-400 focus-visible:ring-blue-500 shadow-sm hover:shadow-md hover:shadow-blue-500/15 active:scale-[0.98]",
-    secondary: "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 focus-visible:ring-gray-400 shadow-sm active:scale-[0.98]",
-    ghost: "text-gray-600 hover:bg-gray-100 hover:text-gray-800 focus-visible:ring-gray-400 active:scale-[0.98]",
-    danger: "bg-gradient-to-r from-red-600 to-red-500 text-white hover:from-red-500 hover:to-red-400 focus-visible:ring-red-500 shadow-sm hover:shadow-md hover:shadow-red-500/15 active:scale-[0.98]",
+    primary:
+      "bg-gold hover:bg-gold-bright text-obsidian active:scale-[0.98]",
+    secondary:
+      "bg-transparent text-parchment border border-rim hover:border-rim-strong hover:bg-elevated active:scale-[0.98]",
+    ghost:
+      "text-mist hover:text-parchment hover:bg-elevated active:scale-[0.98]",
+    danger:
+      "bg-crimson-bg text-crimson border border-crimson/30 hover:bg-crimson hover:text-parchment active:scale-[0.98]",
   };
 
   const sizes = {
-    sm: "px-3 py-1.5 text-sm",
-    md: "px-4 py-2.5 text-sm",
-    lg: "px-6 py-3 text-base",
+    sm: "px-3 py-1.5 text-xs",
+    md: "px-5 py-2.5 text-sm",
+    lg: "px-7 py-3.5 text-sm",
   };
 
   return (

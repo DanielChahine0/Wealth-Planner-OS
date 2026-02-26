@@ -16,8 +16,8 @@ export function SuccessRateGauge({ successRate }: SuccessRateGaugeProps) {
       role="img"
       aria-label={`Success rate: ${formatPercent(successRate, 0)}`}
     >
-      <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <h3 className="text-xs text-dust tracking-widest uppercase mb-4 font-mono flex items-center gap-2">
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         Success Rate
@@ -29,26 +29,30 @@ export function SuccessRateGauge({ successRate }: SuccessRateGaugeProps) {
             cy="50%"
             innerRadius="72%"
             outerRadius="100%"
-            barSize={12}
+            barSize={10}
             data={data}
             startAngle={90}
             endAngle={-270}
           >
-            <RadialBar background dataKey="value" cornerRadius={6} />
+            <RadialBar
+              background={{ fill: "#26262D" }}
+              dataKey="value"
+              cornerRadius={0}
+            />
           </RadialBarChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-bold tabular-nums" style={{ color }}>
+          <span className="font-mono text-3xl tabular-nums" style={{ color }}>
             {formatPercent(successRate, 0)}
           </span>
-          <span className="text-xs text-gray-400 mt-0.5">success</span>
+          <span className="text-xs text-dust mt-0.5 tracking-wide">success</span>
         </div>
       </div>
-      <div className="text-center mt-2">
-        <p className="text-xs font-semibold" style={{ color }}>
+      <div className="text-center mt-3">
+        <p className="text-xs font-mono tracking-widest uppercase" style={{ color }}>
           {label}
         </p>
-        <p className="text-xs text-gray-500 mt-1 max-w-[180px] leading-relaxed">
+        <p className="text-xs text-mist mt-1.5 max-w-[180px] leading-relaxed">
           {successRate >= 0.85
             ? "Your plan is well-positioned for a comfortable retirement"
             : successRate >= 0.65

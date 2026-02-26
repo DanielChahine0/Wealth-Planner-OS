@@ -76,30 +76,36 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 flex items-center justify-center p-4 sm:p-6">
-      {/* Background decoration */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-100/30 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen bg-obsidian flex items-center justify-center p-4 sm:p-6">
+      {/* Subtle geometric grid */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(rgba(200,162,84,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(200,162,84,0.025) 1px, transparent 1px)`,
+          backgroundSize: "80px 80px",
+        }}
+      />
 
       <div className="relative z-10 w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-            </div>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <span className="text-gold text-xs">◆</span>
+            <span className="font-serif text-parchment text-lg tracking-widest">
+              WEALTHPLANNER<span className="text-gold">OS</span>
+            </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Build Your Wealth Plan</h1>
-          <p className="text-sm text-gray-500 mt-2 max-w-sm mx-auto">Tell us about yourself to generate your personalized simulation</p>
+          <h1 className="font-serif text-3xl sm:text-4xl text-parchment mb-2">
+            Build Your Wealth Plan
+          </h1>
+          <p className="text-sm text-mist max-w-sm mx-auto">
+            Tell us about yourself to generate your personalized simulation
+          </p>
         </div>
 
         <StepIndicator steps={STEPS} currentStep={step} />
 
-        <Card className="shadow-lg shadow-black/[0.03] border-gray-200/80">
+        <Card className="shadow-2xl shadow-black/40">
           {step === 0 && (
             <ProfileForm defaultValues={profileData} onNext={handleProfileNext} />
           )}
@@ -128,20 +134,20 @@ export default function OnboardingPage() {
 
         {isLoading && (
           <div className="mt-5 text-center">
-            <div className="inline-flex items-center gap-3 bg-white border border-blue-100 shadow-md shadow-blue-500/5 rounded-xl px-5 py-3">
-              <svg className="animate-spin h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <div className="inline-flex items-center gap-3 bg-surface border border-gold/20 px-5 py-3">
+              <svg className="animate-spin h-4 w-4 text-gold" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              <span className="text-sm font-medium text-blue-700">
+              <span className="text-sm font-medium text-gold tracking-wide">
                 {stageMessages[stage]}
               </span>
             </div>
           </div>
         )}
         {error && (
-          <div className="mt-5 flex items-start gap-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-4">
-            <svg className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="mt-5 flex items-start gap-3 text-sm text-crimson bg-crimson-bg border border-crimson/20 p-4">
+            <svg className="w-5 h-5 text-crimson flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
             <span>{error}</span>

@@ -10,17 +10,17 @@ export function LoadingSpinner({ size = "md", message }: LoadingSpinnerProps) {
       <div className="relative">
         <svg
           aria-hidden="true"
-          className={`animate-spin text-blue-600 ${sizes[size]}`}
+          className={`animate-spin text-gold ${sizes[size]}`}
           fill="none"
           viewBox="0 0 24 24"
         >
           <circle
-            className="opacity-20"
+            className="opacity-15"
             cx="12"
             cy="12"
             r="10"
             stroke="currentColor"
-            strokeWidth="4"
+            strokeWidth="3"
           />
           <path
             className="opacity-80"
@@ -30,7 +30,7 @@ export function LoadingSpinner({ size = "md", message }: LoadingSpinnerProps) {
         </svg>
       </div>
       {message && (
-        <span role="status" aria-live="polite" className="text-sm text-gray-500 font-medium">
+        <span role="status" aria-live="polite" className="text-sm text-mist font-medium tracking-wide">
           {message}
         </span>
       )}

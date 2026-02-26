@@ -63,15 +63,15 @@ export function ProfileForm({ defaultValues, onNext }: ProfileFormProps) {
     });
   };
 
-  const inputClasses = "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400";
-  const labelClasses = "block text-sm font-medium text-gray-700 mb-1.5";
-  const errorClasses = "text-red-500 text-xs mt-1.5 flex items-center gap-1";
+  const inputClasses = "w-full border border-rim bg-elevated text-parchment rounded-none px-3 py-2.5 text-sm hover:border-rim-strong focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all placeholder:text-dust";
+  const labelClasses = "block text-xs text-mist tracking-wide mb-1.5";
+  const errorClasses = "text-crimson text-xs mt-1.5 flex items-center gap-1";
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Section: Personal */}
       <div>
-        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Personal Details</h3>
+        <h3 className="text-xs font-mono text-gold tracking-widest uppercase mb-4">Personal Details</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="current_age" className={labelClasses}>Current Age</label>
@@ -90,12 +90,12 @@ export function ProfileForm({ defaultValues, onNext }: ProfileFormProps) {
 
       {/* Section: Income & Expenses */}
       <div>
-        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Income &amp; Expenses</h3>
+        <h3 className="text-xs font-mono text-gold tracking-widest uppercase mb-4">Income &amp; Expenses</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="annual_income" className={labelClasses}>Annual Income</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dust text-sm font-mono">$</span>
               <input id="annual_income" type="number" {...register("annual_income")}
                 className={`${inputClasses} pl-7`} placeholder="120,000" />
             </div>
@@ -106,13 +106,13 @@ export function ProfileForm({ defaultValues, onNext }: ProfileFormProps) {
             <div className="relative">
               <input id="income_growth_rate" type="number" step="0.01" {...register("income_growth_rate")}
                 className={`${inputClasses} pr-12`} placeholder="0.03" />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-medium">%/yr</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-dust text-xs font-mono">%/yr</span>
             </div>
           </div>
           <div>
             <label htmlFor="annual_expenses" className={labelClasses}>Annual Expenses</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dust text-sm font-mono">$</span>
               <input id="annual_expenses" type="number" {...register("annual_expenses")}
                 className={`${inputClasses} pl-7`} placeholder="80,000" />
             </div>
@@ -120,7 +120,7 @@ export function ProfileForm({ defaultValues, onNext }: ProfileFormProps) {
           <div>
             <label htmlFor="current_portfolio_value" className={labelClasses}>Current Portfolio</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dust text-sm font-mono">$</span>
               <input id="current_portfolio_value" type="number" {...register("current_portfolio_value")}
                 className={`${inputClasses} pl-7`} placeholder="200,000" />
             </div>
@@ -130,12 +130,12 @@ export function ProfileForm({ defaultValues, onNext }: ProfileFormProps) {
 
       {/* Section: Investment */}
       <div>
-        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Investment Preferences</h3>
+        <h3 className="text-xs font-mono text-gold tracking-widest uppercase mb-4">Investment Preferences</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="annual_contribution" className={labelClasses}>Annual Contribution</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dust text-sm font-mono">$</span>
               <input id="annual_contribution" type="number" {...register("annual_contribution")}
                 className={`${inputClasses} pl-7`} placeholder="20,000" />
             </div>
@@ -154,7 +154,7 @@ export function ProfileForm({ defaultValues, onNext }: ProfileFormProps) {
 
       {/* Section: Tax */}
       <div>
-        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Tax Information</h3>
+        <h3 className="text-xs font-mono text-gold tracking-widest uppercase mb-4">Tax Information</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="filing_status" className={labelClasses}>Filing Status</label>
