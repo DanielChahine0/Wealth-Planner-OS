@@ -1,0 +1,11 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://your-app.railway.app/:path*"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "@wealth_planner_api_url"
+  }
+}
