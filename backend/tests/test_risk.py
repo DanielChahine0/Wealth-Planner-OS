@@ -85,3 +85,55 @@ def test_misalignment_achievable_goal():
     result = run_simulation(profile, n_simulations=500)
     flags = detect_misalignment(profile, result)
     assert any(f.severity == "ok" for f in flags), "Expected at least one 'ok' flag"
+
+
+def test_var_less_than_median():
+    """var_5th_percentile (worst-case 5%) should be <= median_final_value."""
+    profile = make_profile()
+    result = run_simulation(profile, n_simulations=500)
+    report = analyze_risk(result)
+    assert report.var_5th_percentile <= result.median_final_value, (
+        f"Expected VaR ({report.var_5th_percentile:,.0f}) "
+        f"<= median ({result.median_final_value:,.0f})"
+    )
+
+
+def test_cvar_less_than_or_equal_var():
+    """cvar_5th_percentile (expected shortfall) should be <= var_5th_percentile."""
+    profile = make_profile()
+    result = run_simulation(profile, n_simulations=500)
+    report = analyze_risk(result)
+    assert report.cvar_5th_percentile <= report.var_5th_percentile, (
+        f"Expected CVaR ({report.cvar_5th_percentile:,.0f}) "
+        f"<= VaR ({report.var_5th_percentile:,.0f})"
+    )
+
+
+def test_portfolio_volatility_positive():
+    """portfolio_volatility must be a positive number."""
+    profile = make_profile()
+    result = run_simulation(profile, n_simulations=500)
+    report = analyze_risk(result)
+    assert report.portfolio_volatility > 0, (
+        f"Expected portfolio_volatility > 0, got {report.portfolio_volatility}"
+    )
+
+
+def test_max_drawdown_between_0_and_1():
+    """max_drawdown_median must be in the range [0, 1]."""
+    profile = make_profile()
+    result = run_simulation(profile, n_simulations=500)
+    report = analyze_risk(result)
+    assert 0 <= report.max_drawdown_median <= 1, (
+        f"Expected max_drawdown_median in [0, 1], got {report.max_drawdown_median}"
+    )
+
+
+def test_fragility_score_range():
+    """fragility_score must be in the range [0, 100]."""
+    profile = make_profile()
+    result = run_simulation(profile, n_simulations=500)
+    report = analyze_risk(result)
+    assert 0 <= report.fragility_score <= 100, (
+        f"Expected fragility_score in [0, 100], got {report.fragility_score}"
+    )

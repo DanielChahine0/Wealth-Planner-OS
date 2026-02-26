@@ -84,3 +84,42 @@ def test_metadata():
     assert result.simulation_metadata.n_simulations == 500
     assert result.simulation_metadata.n_years == 30
     assert result.simulation_metadata.simulation_duration_ms > 0
+
+
+def test_contribution_deficit_drains_portfolio():
+    """
+    When expenses >> income, the contribution is deeply negative each year.
+    The median final portfolio value must be lower than the initial value.
+    """
+    profile = make_profile(
+        annual_income=50_000,
+        annual_expenses=200_000,
+        current_portfolio_value=500_000,
+        annual_contribution=0,
+    )
+    result = run_simulation(profile, n_simulations=500)
+    assert result.median_final_value < profile.current_portfolio_value, (
+        f"Expected median_final_value ({result.median_final_value:,.0f}) "
+        f"< initial ({profile.current_portfolio_value:,.0f}) for deficit profile"
+    )
+
+
+def test_paths_sample_size():
+    """paths_sample must contain no more than 200 paths."""
+    profile = make_profile()
+    result = run_simulation(profile, n_simulations=1000)
+    assert len(result.paths_sample) <= 200, (
+        f"Expected paths_sample length <= 200, got {len(result.paths_sample)}"
+    )
+
+
+def test_years_count_matches_horizon():
+    """len(result.years) should equal retirement_age - current_age + 1."""
+    current_age = 30
+    retirement_age = 55
+    profile = make_profile(current_age=current_age, retirement_age=retirement_age)
+    result = run_simulation(profile, n_simulations=200)
+    expected = retirement_age - current_age + 1
+    assert len(result.years) == expected, (
+        f"Expected {expected} years, got {len(result.years)}"
+    )
