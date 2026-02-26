@@ -10,14 +10,18 @@ from app.config import settings
 
 MODEL = "claude-sonnet-4-6"
 MAX_TOKENS = 2048
-MAX_RETRIES = 3
 RETRY_BASE_DELAY = 1.0
 
 
 class ClaudeClient:
     def __init__(self):
+        if not settings.anthropic_api_key:
+            raise ValueError(
+                "ANTHROPIC_API_KEY is not set. Please configure it in backend/.env"
+            )
         self._client = anthropic.AsyncAnthropic(
-            api_key=settings.anthropic_api_key
+            api_key=settings.anthropic_api_key,
+            timeout=settings.claude_timeout,
         )
 
     async def complete(self, user_prompt: str, system: Optional[str] = None) -> str:
@@ -31,17 +35,18 @@ class ClaudeClient:
         if system:
             kwargs["system"] = system
 
-        for attempt in range(MAX_RETRIES):
+        max_retries = settings.claude_max_retries
+        for attempt in range(max_retries):
             try:
                 response = await self._client.messages.create(**kwargs)
                 return response.content[0].text
-            except anthropic.RateLimitError:
-                if attempt < MAX_RETRIES - 1:
+            except (anthropic.RateLimitError, asyncio.TimeoutError):
+                if attempt < max_retries - 1:
                     await asyncio.sleep(RETRY_BASE_DELAY * (2 ** attempt))
                 else:
                     raise
             except anthropic.APIStatusError as e:
-                if e.status_code >= 500 and attempt < MAX_RETRIES - 1:
+                if e.status_code >= 500 and attempt < max_retries - 1:
                     await asyncio.sleep(RETRY_BASE_DELAY * (2 ** attempt))
                 else:
                     raise
@@ -54,6 +59,7 @@ class ClaudeClient:
         messages: list[dict],
     ) -> AsyncIterator[str]:
         """Streaming completion — yields text tokens as they arrive."""
+        messages = messages[-settings.max_chat_history:]
         async with self._client.messages.stream(
             model=MODEL,
             max_tokens=MAX_TOKENS,

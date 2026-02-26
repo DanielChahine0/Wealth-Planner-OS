@@ -18,6 +18,20 @@ def _compute_drawdown(path: np.ndarray) -> float:
 
 
 def analyze_risk(result: SimulationResult) -> RiskReport:
+    """
+    Compute a comprehensive risk report from simulation results.
+
+    Fragility Score formula (0-100, four components):
+      1. Success component  (weight 40): (1 - success_rate) * 40
+         - Measures how often the plan fails (portfolio reaches 0).
+      2. Drawdown component (weight 30): median_max_drawdown * 30
+         - Measures typical peak-to-trough loss across simulation paths.
+      3. Dispersion component (weight 20): min((p90-p10)/p50 / 10 * 20, 20)
+         - Measures outcome uncertainty; wide spread = more fragile.
+      4. CVaR component     (weight 10): min(|cvar_5| / p50 * 10, 10) if cvar_5 < 0
+         - Penalises severe tail losses (expected shortfall below 5th pct).
+    Total: up to 40 + 30 + 20 + 10 = 100 points.
+    """
     paths = np.array(result.paths_sample) if result.paths_sample else None
 
     final_p10 = result.percentiles.p10[-1]
@@ -34,11 +48,12 @@ def analyze_risk(result: SimulationResult) -> RiskReport:
         tail_values = final_values[final_values <= var_threshold]
         cvar_5 = float(np.mean(tail_values)) if len(tail_values) > 0 else var_5
 
-        # Portfolio volatility: std of year-over-year returns across sample paths
+        # Portfolio volatility: std of log year-over-year returns across sample paths
         if paths.shape[1] > 1:
-            with np.errstate(invalid="ignore", divide="ignore"):
-                yoy_returns = np.diff(paths, axis=1) / np.where(paths[:, :-1] > 0, paths[:, :-1], np.nan)
-            valid_returns = yoy_returns[np.isfinite(yoy_returns)]
+            log_returns = np.log(
+                paths[:, 1:] / np.where(paths[:, :-1] > 0, paths[:, :-1], 1)
+            )
+            valid_returns = log_returns[np.isfinite(log_returns)]
             port_vol = float(np.std(valid_returns)) if len(valid_returns) > 0 else 0.15
         else:
             port_vol = 0.15

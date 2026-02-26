@@ -94,6 +94,7 @@ def run_simulation(profile: UserProfile, n_simulations: int = 10000) -> Simulati
         paths[:, t + 1] = np.maximum(paths[:, t + 1], 0.0)
 
     # Compute percentiles across all simulations at each year
+    # Single np.percentile call — vectorized across all percentile levels at once
     pct_values = np.percentile(paths, [10, 25, 50, 75, 90], axis=0)
 
     years = list(range(current_year, current_year + n_years + 1))
