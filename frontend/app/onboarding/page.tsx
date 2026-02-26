@@ -4,12 +4,13 @@ import { useRouter } from "next/navigation";
 import { StepIndicator } from "@/components/onboarding/StepIndicator";
 import { ProfileForm } from "@/components/onboarding/ProfileForm";
 import { GoalsForm } from "@/components/onboarding/GoalsForm";
+import { AssetAllocationForm } from "@/components/onboarding/AssetAllocationForm";
 import { LifeEventsForm } from "@/components/onboarding/LifeEventsForm";
 import { Card } from "@/components/shared/Card";
 import { useSimulation } from "@/hooks/useSimulation";
 import type { UserProfile, FinancialGoal, LifeEvent } from "@/lib/types";
 
-const STEPS = ["Profile", "Goals", "Life Events"];
+const STEPS = ["Profile", "Goals", "Allocation", "Life Events"];
 
 const DEFAULT_ALLOCATION = {
   us_equity: 0.6,
@@ -25,6 +26,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [profileData, setProfileData] = useState<Partial<UserProfile>>({});
   const [goals, setGoals] = useState<FinancialGoal[]>([]);
+  const [allocation, setAllocation] = useState(DEFAULT_ALLOCATION);
 
   const handleProfileNext = (data: Partial<UserProfile>) => {
     setProfileData(data);
@@ -36,6 +38,11 @@ export default function OnboardingPage() {
     setStep(2);
   };
 
+  const handleAllocationNext = (alloc: typeof DEFAULT_ALLOCATION) => {
+    setAllocation(alloc);
+    setStep(3);
+  };
+
   const handleSubmit = async (events: LifeEvent[]) => {
     const profile: UserProfile = {
       current_age: profileData.current_age ?? 35,
@@ -45,7 +52,7 @@ export default function OnboardingPage() {
       annual_expenses: profileData.annual_expenses ?? 80000,
       current_portfolio_value: profileData.current_portfolio_value ?? 200000,
       annual_contribution: profileData.annual_contribution ?? 20000,
-      asset_allocation: DEFAULT_ALLOCATION,
+      asset_allocation: allocation,
       risk_tolerance: profileData.risk_tolerance ?? "moderate",
       goals,
       life_events: events,
@@ -90,9 +97,16 @@ export default function OnboardingPage() {
             />
           )}
           {step === 2 && (
+            <AssetAllocationForm
+              defaultValues={allocation}
+              onNext={handleAllocationNext}
+              onBack={() => setStep(1)}
+            />
+          )}
+          {step === 3 && (
             <LifeEventsForm
               onSubmit={handleSubmit}
-              onBack={() => setStep(1)}
+              onBack={() => setStep(2)}
               isLoading={isLoading}
             />
           )}

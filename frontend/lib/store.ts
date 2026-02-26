@@ -1,5 +1,6 @@
 "use client";
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type {
   UserProfile,
   SimulationResult,
@@ -20,21 +21,36 @@ interface WealthPlannerState {
   reset: () => void;
 }
 
-export const useStore = create<WealthPlannerState>((set) => ({
-  profile: null,
-  simulationResult: null,
-  riskReport: null,
-  advisorResponse: null,
-
-  setProfile: (profile) => set({ profile }),
-  setSimulationResult: (simulationResult) => set({ simulationResult }),
-  setRiskReport: (riskReport) => set({ riskReport }),
-  setAdvisorResponse: (advisorResponse) => set({ advisorResponse }),
-  reset: () =>
-    set({
+export const useStore = create<WealthPlannerState>()(
+  persist(
+    (set) => ({
       profile: null,
       simulationResult: null,
       riskReport: null,
       advisorResponse: null,
+
+      setProfile: (profile) => set({ profile }),
+      setSimulationResult: (simulationResult) => set({ simulationResult }),
+      setRiskReport: (riskReport) => set({ riskReport }),
+      setAdvisorResponse: (advisorResponse) => set({ advisorResponse }),
+      reset: () =>
+        set({
+          profile: null,
+          simulationResult: null,
+          riskReport: null,
+          advisorResponse: null,
+        }),
     }),
-}));
+    {
+      name: "wealth-planner-state",
+      partialize: (state) => ({
+        profile: state.profile,
+        simulationResult: state.simulationResult
+          ? { ...state.simulationResult, paths_sample: [] }
+          : null,
+        riskReport: state.riskReport,
+        advisorResponse: state.advisorResponse,
+      }),
+    }
+  )
+);

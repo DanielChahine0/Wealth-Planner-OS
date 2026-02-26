@@ -55,10 +55,11 @@ export function GoalsForm({ defaultGoals = [], onNext, onBack }: GoalsFormProps)
               </button>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Goal Name</label>
+              <label htmlFor={`goal-name-${goal.id}`} className="block text-xs font-medium text-gray-600 mb-1">Goal Name</label>
               <input
+                id={`goal-name-${goal.id}`}
                 type="text"
                 placeholder="e.g. Retirement, College Fund"
                 value={goal.name}
@@ -67,8 +68,9 @@ export function GoalsForm({ defaultGoals = [], onNext, onBack }: GoalsFormProps)
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Target Amount ($)</label>
+              <label htmlFor={`goal-amount-${goal.id}`} className="block text-xs font-medium text-gray-600 mb-1">Target Amount ($)</label>
               <input
+                id={`goal-amount-${goal.id}`}
                 type="number"
                 value={goal.target_amount || ""}
                 onChange={(e) => updateGoal(goal.id, "target_amount", Number(e.target.value))}
@@ -76,8 +78,9 @@ export function GoalsForm({ defaultGoals = [], onNext, onBack }: GoalsFormProps)
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Target Year</label>
+              <label htmlFor={`goal-year-${goal.id}`} className="block text-xs font-medium text-gray-600 mb-1">Target Year</label>
               <input
+                id={`goal-year-${goal.id}`}
                 type="number"
                 value={goal.target_year}
                 onChange={(e) => updateGoal(goal.id, "target_year", Number(e.target.value))}
@@ -85,8 +88,9 @@ export function GoalsForm({ defaultGoals = [], onNext, onBack }: GoalsFormProps)
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Priority</label>
+              <label htmlFor={`goal-priority-${goal.id}`} className="block text-xs font-medium text-gray-600 mb-1">Priority</label>
               <select
+                id={`goal-priority-${goal.id}`}
                 value={goal.priority}
                 onChange={(e) => updateGoal(goal.id, "priority", e.target.value as GoalPriority)}
                 className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

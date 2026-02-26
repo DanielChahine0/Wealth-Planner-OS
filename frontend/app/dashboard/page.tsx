@@ -1,19 +1,28 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { Card } from "@/components/shared/Card";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
-import { SimulationChart } from "@/components/dashboard/SimulationChart";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { SuccessRateGauge } from "@/components/dashboard/SuccessRateGauge";
 import { RiskPanel } from "@/components/dashboard/RiskPanel";
 import { StrategyCards } from "@/components/dashboard/StrategyCards";
 import { formatCurrency } from "@/lib/formatters";
 
+const SimulationChart = dynamic(
+  () => import("@/components/dashboard/SimulationChart").then(m => ({ default: m.SimulationChart })),
+  { ssr: false, loading: () => <LoadingSpinner size="sm" message="Loading chart..." /> }
+);
+
 export default function DashboardPage() {
   const router = useRouter();
-  const { profile, simulationResult, riskReport, advisorResponse } = useStore();
+  const profile = useStore((s) => s.profile);
+  const simulationResult = useStore((s) => s.simulationResult);
+  const riskReport = useStore((s) => s.riskReport);
+  const advisorResponse = useStore((s) => s.advisorResponse);
 
   useEffect(() => {
     if (!simulationResult) {
@@ -53,7 +62,7 @@ export default function DashboardPage() {
 
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Summary Banner */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Age", value: `${profile.current_age} → ${profile.retirement_age}` },
             { label: "Portfolio Today", value: formatCurrency(profile.current_portfolio_value, true) },
@@ -67,11 +76,13 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* Main 2-column layout */}
-        <div className="grid grid-cols-3 gap-6">
+        {/* Main layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: Chart (2/3 width) */}
-          <Card className="col-span-2">
-            <SimulationChart result={simulationResult} />
+          <Card className="lg:col-span-2">
+            <ErrorBoundary fallback={<div className="p-4 text-sm text-gray-500">Chart failed to load</div>}>
+              <SimulationChart result={simulationResult} />
+            </ErrorBoundary>
           </Card>
 
           {/* Right: Success gauge + Risk (1/3 width) */}
@@ -82,7 +93,9 @@ export default function DashboardPage() {
             {riskReport ? (
               <Card>
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">Risk Analysis</h3>
-                <RiskPanel report={riskReport} />
+                <ErrorBoundary fallback={<div className="p-4 text-sm text-gray-500">Risk analysis unavailable</div>}>
+                  <RiskPanel report={riskReport} />
+                </ErrorBoundary>
               </Card>
             ) : (
               <Card>
@@ -95,7 +108,9 @@ export default function DashboardPage() {
         {/* Strategy Recommendations */}
         {advisorResponse ? (
           <Card>
-            <StrategyCards response={advisorResponse} />
+            <ErrorBoundary fallback={<div className="p-4 text-sm text-gray-500">Strategy unavailable</div>}>
+              <StrategyCards response={advisorResponse} />
+            </ErrorBoundary>
           </Card>
         ) : (
           <Card className="flex items-center justify-center py-8">

@@ -8,17 +8,22 @@ interface RiskPanelProps {
 }
 
 export function RiskPanel({ report }: RiskPanelProps) {
-  const fragilityColor = getFragilityColor(report.fragility_score);
+  const { color: fragilityColor, label: fragilityLabel } = getFragilityColor(report.fragility_score);
 
   return (
     <div className="space-y-4">
       {/* Fragility Score */}
       <div className="flex items-center gap-3">
-        <div
-          className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-white text-lg flex-shrink-0"
-          style={{ backgroundColor: fragilityColor }}
-        >
-          {Math.round(report.fragility_score)}
+        <div className="flex flex-col items-center flex-shrink-0">
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-white text-lg"
+            style={{ backgroundColor: fragilityColor }}
+          >
+            {Math.round(report.fragility_score)}
+          </div>
+          <span className="text-xs font-medium mt-1" style={{ color: fragilityColor }}>
+            {fragilityLabel}
+          </span>
         </div>
         <div>
           <div className="text-sm font-semibold text-gray-800">Fragility Score</div>
@@ -55,7 +60,7 @@ export function RiskPanel({ report }: RiskPanelProps) {
       </div>
 
       {/* Misalignment Flags */}
-      {report.misalignment_flags.length > 0 && (
+      {report.misalignment_flags.length > 0 ? (
         <div>
           <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
             Goal Alignment
@@ -71,6 +76,10 @@ export function RiskPanel({ report }: RiskPanelProps) {
               </div>
             ))}
           </div>
+        </div>
+      ) : (
+        <div className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg p-2 text-center">
+          All goals on track
         </div>
       )}
     </div>

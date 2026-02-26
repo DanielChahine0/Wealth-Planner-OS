@@ -33,7 +33,7 @@ export default function LandingPage() {
         </Link>
 
         {/* Features */}
-        <div className="grid grid-cols-3 gap-6 mt-16 text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16 text-left">
           {[
             {
               icon: "📊",

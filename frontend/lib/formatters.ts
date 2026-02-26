@@ -26,18 +26,18 @@ export function formatDate(year: number): string {
   return year.toString();
 }
 
-export function getFragilityColor(score: number): string {
-  if (score < 25) return "#22c55e";  // green
-  if (score < 50) return "#eab308";  // yellow
-  if (score < 75) return "#f97316";  // orange
-  return "#ef4444";                   // red
+export function getFragilityColor(score: number): { color: string; label: string } {
+  if (score < 25) return { color: "#22c55e", label: "Low" };
+  if (score < 50) return { color: "#eab308", label: "Moderate" };
+  if (score < 75) return { color: "#f97316", label: "Elevated" };
+  return { color: "#ef4444", label: "High" };
 }
 
-export function getSuccessRateColor(rate: number): string {
-  if (rate >= 0.85) return "#22c55e";
-  if (rate >= 0.65) return "#eab308";
-  if (rate >= 0.45) return "#f97316";
-  return "#ef4444";
+export function getSuccessRateColor(rate: number): { color: string; label: string } {
+  if (rate >= 0.85) return { color: "#22c55e", label: "On track" };
+  if (rate >= 0.65) return { color: "#eab308", label: "Some risk" };
+  if (rate >= 0.45) return { color: "#f97316", label: "High risk" };
+  return { color: "#ef4444", label: "Critical" };
 }
 
 export function getSeverityColor(severity: string): string {

@@ -37,9 +37,9 @@ export default function AdvisorPage() {
         </div>
       </nav>
 
-      <div className="flex flex-1 overflow-hidden max-w-6xl mx-auto w-full p-6 gap-6">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden max-w-6xl mx-auto w-full p-6 gap-6">
         {/* Sidebar: context snapshot */}
-        <div className="w-64 flex-shrink-0 space-y-4">
+        <div className="w-full lg:w-64 flex-shrink-0 space-y-4">
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
               Your Plan Snapshot
