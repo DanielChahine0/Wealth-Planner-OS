@@ -129,8 +129,8 @@ def test_max_drawdown_between_0_and_1():
     )
 
 
-def test_fragility_score_range():
-    """fragility_score must be in the range [0, 100]."""
+def test_fragility_score_bounded():
+    """fragility_score must be in the range [0, 100] (extended assertion with message)."""
     profile = make_profile()
     result = run_simulation(profile, n_simulations=500)
     report = analyze_risk(result)
