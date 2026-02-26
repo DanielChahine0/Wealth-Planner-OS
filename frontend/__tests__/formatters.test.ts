@@ -21,15 +21,19 @@ describe("formatPercent", () => {
 
 describe("getFragilityColor", () => {
   it("returns green for low score", () => {
-    expect(getFragilityColor(20)).toBe("#22c55e");
+    expect(getFragilityColor(20).color).toBe("#22c55e");
+    expect(getFragilityColor(20).label).toBe("Low");
   });
   it("returns yellow for moderate score", () => {
-    expect(getFragilityColor(35)).toBe("#eab308");
+    expect(getFragilityColor(35).color).toBe("#eab308");
+    expect(getFragilityColor(35).label).toBe("Moderate");
   });
   it("returns orange for elevated score", () => {
-    expect(getFragilityColor(60)).toBe("#f97316");
+    expect(getFragilityColor(60).color).toBe("#f97316");
+    expect(getFragilityColor(60).label).toBe("Elevated");
   });
   it("returns red for high score", () => {
-    expect(getFragilityColor(80)).toBe("#ef4444");
+    expect(getFragilityColor(80).color).toBe("#ef4444");
+    expect(getFragilityColor(80).label).toBe("High");
   });
 });
