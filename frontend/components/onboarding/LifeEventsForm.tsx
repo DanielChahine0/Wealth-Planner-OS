@@ -44,98 +44,131 @@ export function LifeEventsForm({ defaultEvents = [], onSubmit, onBack, isLoading
 
   const removeEvent = (id: string) => setEvents((prev) => prev.filter((e) => e.id !== id));
 
+  const inputClasses = "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400";
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <p className="text-sm text-gray-500">
         Add major life events that will affect your income or expenses. These are injected into your simulation.
       </p>
 
-      <div className="flex flex-wrap gap-2">
-        {PRESET_EVENTS.map((p) => (
-          <button
-            key={p.name}
-            onClick={() => addPreset(p)}
-            className="px-3 py-1 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded-full hover:bg-blue-100"
-          >
-            + {p.name}
-          </button>
-        ))}
+      {/* Preset quick-add buttons */}
+      <div>
+        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Quick Add</h3>
+        <div className="flex flex-wrap gap-2">
+          {PRESET_EVENTS.map((p) => (
+            <button
+              key={p.name}
+              onClick={() => addPreset(p)}
+              className="group inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all"
+            >
+              <svg className="w-3.5 h-3.5 text-blue-400 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              {p.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {events.map((event, i) => (
-        <div key={event.id} className="border border-gray-200 rounded-lg p-4 space-y-3">
+        <div key={event.id} className="border border-gray-200 rounded-xl p-5 space-y-4 bg-gray-50/50 hover:border-gray-300 transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">Event {i + 1}</span>
+            <span className="text-sm font-semibold text-gray-800">Event {i + 1}{event.name ? `: ${event.name}` : ''}</span>
             <button
               onClick={() => removeEvent(event.id)}
-              className="text-red-400 hover:text-red-600 text-xs"
+              className="text-red-400 hover:text-red-600 text-xs font-medium flex items-center gap-1 hover:bg-red-50 px-2 py-1 rounded-md transition-colors"
             >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
               Remove
             </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor={`event-name-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1">Event Name</label>
+              <label htmlFor={`event-name-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1.5">Event Name</label>
               <input
                 id={`event-name-${event.id}`}
                 type="text"
                 value={event.name}
                 onChange={(e) => updateEvent(event.id, "name", e.target.value)}
-                className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={inputClasses}
+                placeholder="e.g. Marriage, New baby"
               />
             </div>
             <div>
-              <label htmlFor={`event-year-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1">Year</label>
+              <label htmlFor={`event-year-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1.5">Year</label>
               <input
                 id={`event-year-${event.id}`}
                 type="number"
                 min={new Date().getFullYear()}
                 value={event.year}
                 onChange={(e) => updateEvent(event.id, "year", Number(e.target.value))}
-                className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={inputClasses}
               />
             </div>
             <div>
-              <label htmlFor={`event-income-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1">Income Change ($/yr)</label>
-              <input
-                id={`event-income-${event.id}`}
-                type="number"
-                value={event.income_delta || ""}
-                onChange={(e) => updateEvent(event.id, "income_delta", Number(e.target.value))}
-                className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <label htmlFor={`event-income-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1.5">Income Change</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <input
+                  id={`event-income-${event.id}`}
+                  type="number"
+                  value={event.income_delta || ""}
+                  onChange={(e) => updateEvent(event.id, "income_delta", Number(e.target.value))}
+                  className={`${inputClasses} pl-7`}
+                  placeholder="0"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">/yr</span>
+              </div>
             </div>
             <div>
-              <label htmlFor={`event-expense-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1">Expense Change ($/yr)</label>
-              <input
-                id={`event-expense-${event.id}`}
-                type="number"
-                value={event.expense_delta || ""}
-                onChange={(e) => updateEvent(event.id, "expense_delta", Number(e.target.value))}
-                className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <label htmlFor={`event-expense-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1.5">Expense Change</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <input
+                  id={`event-expense-${event.id}`}
+                  type="number"
+                  value={event.expense_delta || ""}
+                  onChange={(e) => updateEvent(event.id, "expense_delta", Number(e.target.value))}
+                  className={`${inputClasses} pl-7`}
+                  placeholder="0"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">/yr</span>
+              </div>
             </div>
-            <div className="col-span-full sm:col-span-2">
-              <label htmlFor={`event-cost-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1">One-Time Cost ($)</label>
-              <input
-                id={`event-cost-${event.id}`}
-                type="number"
-                value={event.one_time_cost || ""}
-                onChange={(e) => updateEvent(event.id, "one_time_cost", Number(e.target.value))}
-                className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+            <div className="col-span-full">
+              <label htmlFor={`event-cost-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1.5">One-Time Cost</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <input
+                  id={`event-cost-${event.id}`}
+                  type="number"
+                  value={event.one_time_cost || ""}
+                  onChange={(e) => updateEvent(event.id, "one_time_cost", Number(e.target.value))}
+                  className={`${inputClasses} pl-7`}
+                  placeholder="0"
+                />
+              </div>
             </div>
           </div>
         </div>
       ))}
 
       {events.length === 0 && (
-        <button
-          onClick={() => setEvents([emptyEvent()])}
-          className="w-full border-2 border-dashed border-gray-300 rounded-lg py-3 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors"
-        >
-          + Add Life Event
-        </button>
+        <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-xl">
+          <svg className="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+          </svg>
+          <p className="text-sm text-gray-400 mb-3">No life events added yet</p>
+          <button
+            onClick={() => setEvents([emptyEvent()])}
+            className="text-sm text-blue-600 font-medium hover:text-blue-700"
+          >
+            + Add a custom event
+          </button>
+        </div>
       )}
 
       <div className="flex gap-3 mt-4">

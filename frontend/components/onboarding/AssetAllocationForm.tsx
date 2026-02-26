@@ -85,34 +85,55 @@ export function AssetAllocationForm({ defaultValues, onNext, onBack }: AssetAllo
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <p className="text-sm text-gray-500">
         Set your target asset allocation. Sliders auto-balance — lock any to hold it fixed.
       </p>
 
-      <div className="space-y-4">
+      {/* Visual allocation bar */}
+      <div className="h-3 rounded-full bg-gray-100 overflow-hidden flex">
+        {ASSET_LABELS.map(({ key, color }) => (
+          pct[key] > 0 && (
+            <div
+              key={key}
+              className={`${color} transition-all duration-300 first:rounded-l-full last:rounded-r-full`}
+              style={{ width: `${pct[key]}%` }}
+            />
+          )
+        ))}
+      </div>
+
+      <div className="space-y-5">
         {ASSET_LABELS.map(({ key, label, color }) => (
-          <div key={key} className="space-y-1">
+          <div key={key} className="space-y-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className={`inline-block w-2.5 h-2.5 rounded-full ${color}`} />
+              <div className="flex items-center gap-2.5">
+                <span className={`inline-block w-3 h-3 rounded-md ${color} shadow-sm`} />
                 <label className="text-sm font-medium text-gray-700">{label}</label>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-gray-900 w-10 text-right">
+                <span className="text-sm font-bold text-gray-900 w-12 text-right tabular-nums">
                   {pct[key]}%
                 </span>
                 <button
                   type="button"
                   onClick={() => toggleLock(key)}
-                  className={`p-1 rounded text-xs transition-colors ${
+                  className={`p-1.5 rounded-md text-xs transition-all ${
                     locked.has(key)
-                      ? "bg-blue-100 text-blue-600"
-                      : "text-gray-400 hover:text-gray-600"
+                      ? "bg-blue-100 text-blue-600 shadow-sm"
+                      : "text-gray-300 hover:text-gray-500 hover:bg-gray-100"
                   }`}
                   title={locked.has(key) ? "Unlock" : "Lock"}
                 >
-                  {locked.has(key) ? "🔒" : "🔓"}
+                  {locked.has(key) ? (
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                    </svg>
+                  )}
                 </button>
               </div>
             </div>
@@ -122,17 +143,28 @@ export function AssetAllocationForm({ defaultValues, onNext, onBack }: AssetAllo
               max={100}
               value={pct[key]}
               onChange={(e) => handleChange(key, Number(e.target.value))}
-              className="w-full accent-blue-600"
+              className="w-full accent-blue-600 h-2 rounded-full cursor-pointer"
             />
           </div>
         ))}
       </div>
 
-      <div className={`flex items-center justify-between p-3 rounded-lg border ${
-        isValid ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+      <div className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${
+        isValid ? "bg-green-50/80 border-green-200" : "bg-red-50/80 border-red-200"
       }`}>
-        <span className="text-sm font-medium text-gray-700">Total Allocation</span>
-        <span className={`text-sm font-bold ${isValid ? "text-green-700" : "text-red-600"}`}>
+        <div className="flex items-center gap-2">
+          {isValid ? (
+            <svg className="w-4.5 h-4.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          ) : (
+            <svg className="w-4.5 h-4.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+          )}
+          <span className="text-sm font-medium text-gray-700">Total Allocation</span>
+        </div>
+        <span className={`text-sm font-bold tabular-nums ${isValid ? "text-green-700" : "text-red-600"}`}>
           {total}% {!isValid && `(${total > 100 ? "over" : "under"} by ${Math.abs(100 - total)}%)`}
         </span>
       </div>
