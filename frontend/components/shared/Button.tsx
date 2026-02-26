@@ -36,6 +36,8 @@ export function Button({
     <button
       className={cn(base, variants[variant], sizes[size], className)}
       disabled={disabled || loading}
+      aria-busy={loading}
+      aria-disabled={disabled || loading}
       {...props}
     >
       {loading && (

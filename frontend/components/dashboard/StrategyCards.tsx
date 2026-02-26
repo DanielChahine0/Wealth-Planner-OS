@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card } from "@/components/shared/Card";
 import type { AdvisorResponse, StrategyAction, AssetCategory } from "@/lib/types";
 
@@ -17,7 +17,7 @@ interface StrategyCardProps {
   onToggle: (id: string, approved: boolean | null) => void;
 }
 
-function StrategyCard({ action, onToggle }: StrategyCardProps) {
+const StrategyCard = React.memo(function StrategyCard({ action, onToggle }: StrategyCardProps) {
   return (
     <div
       className={`border rounded-xl p-4 transition-all ${
@@ -69,7 +69,7 @@ function StrategyCard({ action, onToggle }: StrategyCardProps) {
       </div>
     </div>
   );
-}
+});
 
 interface StrategyCardsProps {
   response: AdvisorResponse;

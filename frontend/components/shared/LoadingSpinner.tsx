@@ -8,6 +8,7 @@ export function LoadingSpinner({ size = "md", message }: LoadingSpinnerProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-3">
       <svg
+        aria-hidden="true"
         className={`animate-spin text-blue-600 ${sizes[size]}`}
         fill="none"
         viewBox="0 0 24 24"
@@ -26,7 +27,11 @@ export function LoadingSpinner({ size = "md", message }: LoadingSpinnerProps) {
           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
         />
       </svg>
-      {message && <p className="text-sm text-gray-500">{message}</p>}
+      {message && (
+        <span role="status" aria-live="polite" className="text-sm text-gray-500">
+          {message}
+        </span>
+      )}
     </div>
   );
 }

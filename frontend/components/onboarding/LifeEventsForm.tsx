@@ -73,10 +73,11 @@ export function LifeEventsForm({ defaultEvents = [], onSubmit, onBack, isLoading
               Remove
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Event Name</label>
+              <label htmlFor={`event-name-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1">Event Name</label>
               <input
+                id={`event-name-${event.id}`}
                 type="text"
                 value={event.name}
                 onChange={(e) => updateEvent(event.id, "name", e.target.value)}
@@ -84,17 +85,20 @@ export function LifeEventsForm({ defaultEvents = [], onSubmit, onBack, isLoading
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Year</label>
+              <label htmlFor={`event-year-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1">Year</label>
               <input
+                id={`event-year-${event.id}`}
                 type="number"
+                min={new Date().getFullYear()}
                 value={event.year}
                 onChange={(e) => updateEvent(event.id, "year", Number(e.target.value))}
                 className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Income Change ($/yr)</label>
+              <label htmlFor={`event-income-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1">Income Change ($/yr)</label>
               <input
+                id={`event-income-${event.id}`}
                 type="number"
                 value={event.income_delta || ""}
                 onChange={(e) => updateEvent(event.id, "income_delta", Number(e.target.value))}
@@ -102,17 +106,19 @@ export function LifeEventsForm({ defaultEvents = [], onSubmit, onBack, isLoading
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Expense Change ($/yr)</label>
+              <label htmlFor={`event-expense-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1">Expense Change ($/yr)</label>
               <input
+                id={`event-expense-${event.id}`}
                 type="number"
                 value={event.expense_delta || ""}
                 onChange={(e) => updateEvent(event.id, "expense_delta", Number(e.target.value))}
                 className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-600 mb-1">One-Time Cost ($)</label>
+            <div className="col-span-full sm:col-span-2">
+              <label htmlFor={`event-cost-${event.id}`} className="block text-xs font-medium text-gray-600 mb-1">One-Time Cost ($)</label>
               <input
+                id={`event-cost-${event.id}`}
                 type="number"
                 value={event.one_time_cost || ""}
                 onChange={(e) => updateEvent(event.id, "one_time_cost", Number(e.target.value))}
