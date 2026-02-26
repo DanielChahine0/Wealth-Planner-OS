@@ -1,4 +1,4 @@
-.PHONY: dev backend frontend install test
+.PHONY: dev backend frontend install test lint type-check fmt coverage clean
 
 # Run backend + frontend in parallel
 dev:
@@ -34,3 +34,24 @@ docker-build:
 
 docker-run:
 	docker run -p 8000:8000 --env-file backend/.env wealth-planner-api
+
+# Code quality
+lint:
+	cd backend && . .venv/bin/activate && ruff check app/ || true
+	cd frontend && npm run lint || true
+
+type-check:
+	cd backend && . .venv/bin/activate && python -m mypy app/ --ignore-missing-imports || true
+	cd frontend && npm run type-check || true
+
+fmt:
+	cd backend && . .venv/bin/activate && ruff format app/ || true
+	cd frontend && npm run format || true
+
+coverage:
+	cd backend && . .venv/bin/activate && pytest tests/ -v --cov=app --cov-report=term-missing
+
+clean:
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true
+	rm -rf frontend/.next frontend/node_modules/.cache 2>/dev/null || true
