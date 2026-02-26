@@ -31,17 +31,22 @@ export function SimulationChart({ result }: SimulationChartProps) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Portfolio Projection</h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+            </svg>
+            Portfolio Projection
+          </h2>
+          <p className="text-sm text-gray-400 mt-0.5">
             {formatNumber(result.simulation_metadata.n_simulations)} simulations •{" "}
             {result.simulation_metadata.n_years} years
           </p>
         </div>
-        <div className="text-right">
-          <div className="text-xs text-gray-500">Median at retirement</div>
-          <div className="text-xl font-bold text-blue-600">
+        <div className="text-right bg-blue-50 rounded-xl px-4 py-2.5 border border-blue-100">
+          <div className="text-xs text-blue-600 font-medium">Median at retirement</div>
+          <div className="text-xl font-bold text-blue-700 tabular-nums">
             {formatCurrency(result.median_final_value, true)}
           </div>
         </div>
@@ -99,17 +104,17 @@ export function SimulationChart({ result }: SimulationChartProps) {
         </AreaChart>
       </ResponsiveContainer>
 
-      <div className="flex items-center justify-center gap-6 mt-3 text-xs text-gray-500">
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-0.5 bg-blue-600 inline-block rounded" />
+      <div className="flex items-center justify-center gap-8 mt-4 text-xs text-gray-500">
+        <span className="flex items-center gap-2">
+          <span className="w-8 h-0.5 bg-blue-600 inline-block rounded" />
           Median
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 bg-blue-200 inline-block rounded opacity-60" />
+        <span className="flex items-center gap-2">
+          <span className="w-4 h-4 bg-blue-200/60 inline-block rounded" />
           25th–75th Pct
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 bg-blue-100 inline-block rounded opacity-60" />
+        <span className="flex items-center gap-2">
+          <span className="w-4 h-4 bg-blue-100/60 inline-block rounded" />
           10th–90th Pct
         </span>
       </div>
