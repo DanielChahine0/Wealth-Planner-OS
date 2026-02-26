@@ -1,11 +1,11 @@
 from __future__ import annotations
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from app.schemas.profile import UserProfile
 
 
 class SimulationRequest(BaseModel):
     profile: UserProfile
-    n_simulations: int = 10000
+    n_simulations: int = Field(default=10000, ge=1)
 
 
 class Percentiles(BaseModel):

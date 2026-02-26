@@ -1,3 +1,10 @@
+"""
+Monte Carlo simulation route.
+
+Exposes POST /simulate, which accepts a user financial profile and an optional
+simulation count, runs the vectorized NumPy simulation engine, and returns
+percentile wealth paths, success rate, and summary statistics.
+"""
 from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from app.schemas.simulation import SimulationRequest, SimulationResult
