@@ -1,13 +1,14 @@
 "use client";
 import {
-  AreaChart,
+  ComposedChart,
   Area,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
+  ReferenceLine,
 } from "recharts";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
 import type { SimulationResult } from "@/lib/types";
@@ -16,107 +17,412 @@ interface SimulationChartProps {
   result: SimulationResult;
 }
 
-export function SimulationChart({ result }: SimulationChartProps) {
-  const data = result.years.map((year, i) => ({
-    year,
-    p10: Math.round(result.percentiles.p10[i]),
-    p25: Math.round(result.percentiles.p25[i]),
-    p50: Math.round(result.percentiles.p50[i]),
-    p75: Math.round(result.percentiles.p75[i]),
-    p90: Math.round(result.percentiles.p90[i]),
-  }));
+// ─── Custom Tooltip ───────────────────────────────────────────────────────────
 
-  const formatYAxis = (value: number) => formatCurrency(value, true);
-  const formatTooltipValue = (value: number) => formatCurrency(value);
+const PERCENTILE_ROWS: Array<{
+  key: string;
+  label: string;
+  alpha: number;
+  bold?: boolean;
+}> = [
+  { key: "_p90", label: "90th pct", alpha: 0.38 },
+  { key: "_p75", label: "75th pct", alpha: 0.58 },
+  { key: "_p50", label: "Median",   alpha: 1.00, bold: true },
+  { key: "_p25", label: "25th pct", alpha: 0.58 },
+  { key: "_p10", label: "10th pct", alpha: 0.38 },
+];
+
+function FanTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  const d: Record<string, number> = payload[0]?.payload;
+  if (!d?._p50) return null;
+
+  return (
+    <div
+      style={{
+        background: "#0F0F11",
+        border: "1px solid #38383F",
+        borderRadius: 2,
+        padding: "10px 14px",
+        boxShadow: "0 16px 48px rgba(0,0,0,0.8), 0 0 0 1px rgba(200,162,84,0.06)",
+        minWidth: 172,
+      }}
+    >
+      {/* Year header */}
+      <div
+        style={{
+          color: "#6B5628",
+          fontSize: 10,
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          marginBottom: 8,
+          paddingBottom: 7,
+          borderBottom: "1px solid #1E1E22",
+          fontFamily: "monospace",
+        }}
+      >
+        {label}
+      </div>
+
+      {PERCENTILE_ROWS.map(({ key, label: rowLabel, alpha, bold }) => (
+        <div
+          key={key}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            gap: 20,
+            marginBottom: key === "_p10" ? 0 : bold ? 5 : 3,
+            paddingBottom: bold ? 5 : 0,
+            borderBottom: bold ? "1px solid #1E1E22" : "none",
+            color: `rgba(200, 162, 84, ${alpha})`,
+            fontSize: bold ? 12 : 10,
+            fontWeight: bold ? 700 : 400,
+            fontFamily: "monospace",
+          }}
+        >
+          <span
+            style={{
+              letterSpacing: "0.10em",
+              textTransform: "uppercase",
+              fontSize: bold ? 10 : 9,
+            }}
+          >
+            {rowLabel}
+          </span>
+          <span style={{ fontVariantNumeric: "tabular-nums" }}>
+            {formatCurrency(d[key], true)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+export function SimulationChart({ result }: SimulationChartProps) {
+  const lastIdx = result.years.length - 1;
+  const retirementYear = result.years[lastIdx];
+  const p10Final = Math.round(result.percentiles.p10[lastIdx]);
+  const p90Final = Math.round(result.percentiles.p90[lastIdx]);
+
+  // Build data: raw values for tooltip + stacked band heights for the fan chart
+  const data = result.years.map((year, i) => {
+    const p10 = result.percentiles.p10[i];
+    const p25 = result.percentiles.p25[i];
+    const p50 = result.percentiles.p50[i];
+    const p75 = result.percentiles.p75[i];
+    const p90 = result.percentiles.p90[i];
+    return {
+      year,
+      // Stored for tooltip only (not rendered as chart series)
+      _p10: Math.round(p10),
+      _p25: Math.round(p25),
+      _p50: Math.round(p50),
+      _p75: Math.round(p75),
+      _p90: Math.round(p90),
+      // Stacked band heights (difference between consecutive percentiles)
+      bandBase:      Math.max(0, Math.round(p10)),
+      bandInnerBot:  Math.max(0, Math.round(p25 - p10)),
+      bandCenterBot: Math.max(0, Math.round(p50 - p25)),
+      bandCenterTop: Math.max(0, Math.round(p75 - p50)),
+      bandOuterTop:  Math.max(0, Math.round(p90 - p75)),
+    };
+  });
+
+  const yMax = Math.round(p90Final * 1.09);
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      {/* ─── Header ─────────────────────────────────────────────────────── */}
+      <div className="flex items-start justify-between mb-7">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+          <div className="flex items-center gap-2.5 mb-1.5">
+            {/* Nested diamond icon — matches nav branding */}
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <path d="M6.5 0.7L12.3 6.5L6.5 12.3L0.7 6.5L6.5 0.7Z" stroke="#C8A254" strokeWidth="0.8" fill="none" />
+              <path d="M6.5 3.5L9.5 6.5L6.5 9.5L3.5 6.5L6.5 3.5Z" fill="#C8A254" fillOpacity="0.32" />
             </svg>
-            Portfolio Projection
-          </h2>
-          <p className="text-sm text-gray-400 mt-0.5">
-            {formatNumber(result.simulation_metadata.n_simulations)} simulations •{" "}
-            {result.simulation_metadata.n_years} years
+            <h2
+              className="text-parchment tracking-wider"
+              style={{ fontFamily: "var(--font-display, Georgia, serif)", fontSize: "0.95rem" }}
+            >
+              Wealth Trajectory
+            </h2>
+          </div>
+          <p
+            className="text-xs tracking-widest"
+            style={{ color: "#4A4742", letterSpacing: "0.1em" }}
+          >
+            {formatNumber(result.simulation_metadata.n_simulations)}&nbsp;simulations
+            <span className="mx-2" style={{ color: "#26262D" }}>·</span>
+            {result.simulation_metadata.n_years}&nbsp;year horizon
           </p>
         </div>
-        <div className="text-right bg-blue-50 rounded-xl px-4 py-2.5 border border-blue-100">
-          <div className="text-xs text-blue-600 font-medium">Median at retirement</div>
-          <div className="text-xl font-bold text-blue-700 tabular-nums">
+
+        {/* Retirement summary stat */}
+        <div
+          className="text-right px-4 py-2.5 relative overflow-hidden"
+          style={{ border: "1px solid #6B5628" }}
+        >
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(135deg, rgba(200,162,84,0.05) 0%, transparent 60%)",
+            }}
+          />
+          <div
+            className="uppercase mb-1"
+            style={{ color: "#4A4742", fontSize: "0.6rem", letterSpacing: "0.14em", fontFamily: "monospace" }}
+          >
+            Median at Retirement
+          </div>
+          <div
+            className="font-bold text-gold tabular-nums"
+            style={{ fontFamily: "var(--font-data, monospace)", fontSize: "1.2rem", lineHeight: 1.15 }}
+          >
             {formatCurrency(result.median_final_value, true)}
+          </div>
+          <div
+            style={{
+              color: "#6B5628",
+              fontSize: "0.6rem",
+              fontFamily: "monospace",
+              marginTop: "0.2rem",
+              letterSpacing: "0.04em",
+            }}
+          >
+            {formatCurrency(p10Final, true)}&thinsp;—&thinsp;{formatCurrency(p90Final, true)}
           </div>
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={320}>
-        <AreaChart data={data} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
+      {/* ─── Chart ──────────────────────────────────────────────────────── */}
+      <ResponsiveContainer width="100%" height={340}>
+        <ComposedChart data={data} margin={{ top: 8, right: 24, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient id="colorP90" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
+            {/* Outer bands: p10–p25, p75–p90 */}
+            <linearGradient id="sc-grad-outer" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor="#C8A254" stopOpacity={0.11} />
+              <stop offset="100%" stopColor="#C8A254" stopOpacity={0.02} />
+            </linearGradient>
+            {/* Inner bands: p25–p50, p50–p75 */}
+            <linearGradient id="sc-grad-inner" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor="#C8A254" stopOpacity={0.22} />
+              <stop offset="100%" stopColor="#C8A254" stopOpacity={0.06} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+
+          <CartesianGrid
+            strokeDasharray="1 10"
+            stroke="rgba(255,255,255,0.04)"
+            vertical={false}
+          />
+
           <XAxis
             dataKey="year"
-            tick={{ fontSize: 11 }}
+            tick={{ fill: "#4A4742", fontSize: 10, fontFamily: "monospace" }}
             tickLine={false}
+            axisLine={{ stroke: "#26262D", strokeWidth: 1 }}
             interval="preserveStartEnd"
+            dy={6}
           />
+
           <YAxis
-            tickFormatter={formatYAxis}
-            tick={{ fontSize: 11 }}
+            tickFormatter={(v: number) => formatCurrency(v, true)}
+            tick={{ fill: "#4A4742", fontSize: 10, fontFamily: "monospace" }}
             tickLine={false}
             axisLine={false}
-            width={60}
+            width={62}
+            domain={[0, yMax]}
           />
+
           <Tooltip
-            formatter={(value: number | string | undefined, name: string | undefined) => {
-              const labels: Record<string, string> = {
-                p90: "90th Pct",
-                p75: "75th Pct",
-                p50: "Median",
-                p25: "25th Pct",
-                p10: "10th Pct",
-              };
-              const num = typeof value === "number" ? value : 0;
-              const key = name ?? "";
-              return [formatTooltipValue(num), labels[key] ?? key];
+            content={<FanTooltip />}
+            cursor={{
+              stroke: "rgba(200,162,84,0.18)",
+              strokeWidth: 1,
+              strokeDasharray: "3 6",
             }}
-            contentStyle={{ fontSize: 12, borderRadius: 8 }}
           />
-          {/* Fan chart: outer band p10-p90 */}
-          <Area type="monotone" dataKey="p90" stroke="#93c5fd" strokeWidth={1.5}
-            fill="url(#colorP90)" fillOpacity={1} dot={false} name="p90" />
-          <Area type="monotone" dataKey="p75" stroke="#60a5fa" strokeWidth={1}
-            fill="#dbeafe" fillOpacity={0.4} dot={false} name="p75" />
-          {/* Median line */}
-          <Area type="monotone" dataKey="p50" stroke="#2563eb" strokeWidth={2.5}
-            fill="#bfdbfe" fillOpacity={0.3} dot={false} name="p50" />
-          <Area type="monotone" dataKey="p25" stroke="#60a5fa" strokeWidth={1}
-            fill="#fff" fillOpacity={1} dot={false} name="p25" />
-          <Area type="monotone" dataKey="p10" stroke="#93c5fd" strokeWidth={1.5}
-            fill="#fff" fillOpacity={1} dot={false} name="p10" />
-        </AreaChart>
+
+          {/* Retirement year vertical marker */}
+          <ReferenceLine
+            x={retirementYear}
+            stroke="rgba(200,162,84,0.20)"
+            strokeDasharray="3 6"
+            strokeWidth={1}
+            label={{
+              value: "RETIRE",
+              position: "insideTopRight",
+              fill: "#6B5628",
+              fontSize: 8,
+              fontFamily: "monospace",
+              letterSpacing: 2,
+              dy: -4,
+            }}
+          />
+
+          {/* ── Stacked fan bands (each is a DIFFERENCE between consecutive percentiles) ── */}
+
+          {/* Base: invisible riser from 0 to p10 — pushes all bands up to correct position */}
+          <Area
+            stackId="fan"
+            type="monotone"
+            dataKey="bandBase"
+            fill="transparent"
+            stroke="rgba(200,162,84,0.20)"
+            strokeWidth={0.75}
+            dot={false}
+            animationDuration={1200}
+            animationEasing="ease-out"
+          />
+
+          {/* p10 → p25: outer lower band */}
+          <Area
+            stackId="fan"
+            type="monotone"
+            dataKey="bandInnerBot"
+            fill="url(#sc-grad-outer)"
+            stroke="none"
+            dot={false}
+            animationDuration={1200}
+            animationEasing="ease-out"
+          />
+
+          {/* p25 → p50: inner lower band */}
+          <Area
+            stackId="fan"
+            type="monotone"
+            dataKey="bandCenterBot"
+            fill="url(#sc-grad-inner)"
+            stroke="none"
+            dot={false}
+            animationDuration={1200}
+            animationEasing="ease-out"
+          />
+
+          {/* p50 → p75: inner upper band */}
+          <Area
+            stackId="fan"
+            type="monotone"
+            dataKey="bandCenterTop"
+            fill="url(#sc-grad-inner)"
+            stroke="none"
+            dot={false}
+            animationDuration={1200}
+            animationEasing="ease-out"
+          />
+
+          {/* p75 → p90: outer upper band */}
+          <Area
+            stackId="fan"
+            type="monotone"
+            dataKey="bandOuterTop"
+            fill="url(#sc-grad-outer)"
+            stroke="rgba(200,162,84,0.20)"
+            strokeWidth={0.75}
+            dot={false}
+            animationDuration={1200}
+            animationEasing="ease-out"
+          />
+
+          {/* ── Median glow: wide transparent line creates soft halo ── */}
+          <Line
+            type="monotone"
+            dataKey="_p50"
+            stroke="#C8A254"
+            strokeWidth={9}
+            strokeOpacity={0.08}
+            dot={false}
+            isAnimationActive={false}
+            legendType="none"
+          />
+
+          {/* ── Median spine: the sharp gold centerline ── */}
+          <Line
+            type="monotone"
+            dataKey="_p50"
+            stroke="#C8A254"
+            strokeWidth={1.75}
+            dot={false}
+            animationDuration={1500}
+            animationEasing="ease-out"
+            legendType="none"
+          />
+        </ComposedChart>
       </ResponsiveContainer>
 
-      <div className="flex items-center justify-center gap-8 mt-4 text-xs text-gray-500">
-        <span className="flex items-center gap-2">
-          <span className="w-8 h-0.5 bg-blue-600 inline-block rounded" />
-          Median
-        </span>
-        <span className="flex items-center gap-2">
-          <span className="w-4 h-4 bg-blue-200/60 inline-block rounded" />
-          25th–75th Pct
-        </span>
-        <span className="flex items-center gap-2">
-          <span className="w-4 h-4 bg-blue-100/60 inline-block rounded" />
-          10th–90th Pct
-        </span>
+      {/* ─── Legend ─────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-center gap-8 mt-5 pb-1">
+        <div className="flex items-center gap-2">
+          <div
+            className="flex items-center"
+            style={{ width: 28, height: 12, position: "relative" }}
+          >
+            {/* Glow swatch */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "rgba(200,162,84,0.18)",
+                borderRadius: 1,
+                filter: "blur(2px)",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                top: "50%",
+                height: 1.5,
+                background: "#C8A254",
+                transform: "translateY(-50%)",
+              }}
+            />
+          </div>
+          <span
+            style={{ color: "#7A7670", fontSize: "0.6rem", letterSpacing: "0.1em", fontFamily: "monospace" }}
+          >
+            MEDIAN
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div
+            style={{
+              width: 14,
+              height: 10,
+              borderRadius: 1,
+              background: "rgba(200,162,84,0.16)",
+              border: "1px solid rgba(200,162,84,0.22)",
+            }}
+          />
+          <span
+            style={{ color: "#7A7670", fontSize: "0.6rem", letterSpacing: "0.1em", fontFamily: "monospace" }}
+          >
+            25TH–75TH
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div
+            style={{
+              width: 14,
+              height: 10,
+              borderRadius: 1,
+              background: "rgba(200,162,84,0.07)",
+              border: "1px solid rgba(200,162,84,0.18)",
+            }}
+          />
+          <span
+            style={{ color: "#7A7670", fontSize: "0.6rem", letterSpacing: "0.1em", fontFamily: "monospace" }}
+          >
+            10TH–90TH
+          </span>
+        </div>
       </div>
     </div>
   );
