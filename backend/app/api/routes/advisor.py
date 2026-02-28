@@ -23,7 +23,14 @@ from app.core.advisor.strategy import parse_strategy_response
 from app.config import settings
 
 router = APIRouter(prefix="/advisor")
-client = ClaudeClient()
+_client: ClaudeClient | None = None
+
+
+def get_client() -> ClaudeClient:
+    global _client
+    if _client is None:
+        _client = ClaudeClient()
+    return _client
 
 
 @router.post("/recommend", response_model=AdvisorResponse)
@@ -42,7 +49,7 @@ async def recommend(request: RecommendRequest) -> AdvisorResponse:
         request.profile, request.simulation_result, request.risk_report
     )
     try:
-        response_text = await client.complete(prompt)
+        response_text = await get_client().complete(prompt)
         return parse_strategy_response(response_text)
     except Exception as e:
         return {"error": "advisor_unavailable", "detail": str(e)}
@@ -71,7 +78,7 @@ async def chat(request: ChatRequest):
 
     async def event_stream():
         try:
-            async for token in client.stream(system_prompt, messages):
+            async for token in get_client().stream(system_prompt, messages):
                 data = json.dumps({"token": token})
                 yield f"data: {data}\n\n"
             yield "data: [DONE]\n\n"
