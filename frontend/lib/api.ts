@@ -4,6 +4,8 @@ import type {
   RiskReport,
   AdvisorResponse,
   ChatMessage,
+  WhatIfResponse,
+  CoachingResponse,
 } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -44,6 +46,25 @@ export async function getRecommendations(
   riskReport: RiskReport
 ): Promise<AdvisorResponse> {
   return post<AdvisorResponse>("/advisor/recommend", {
+    profile,
+    simulation_result: simulationResult,
+    risk_report: riskReport,
+  });
+}
+
+export async function parseWhatIf(
+  question: string,
+  profile: UserProfile
+): Promise<WhatIfResponse> {
+  return post<WhatIfResponse>("/whatif/parse", { question, profile });
+}
+
+export async function getCoachingInsights(
+  profile: UserProfile,
+  simulationResult: SimulationResult,
+  riskReport: RiskReport
+): Promise<CoachingResponse> {
+  return post<CoachingResponse>("/advisor/coaching", {
     profile,
     simulation_result: simulationResult,
     risk_report: riskReport,

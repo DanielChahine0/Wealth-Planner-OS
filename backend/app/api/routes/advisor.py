@@ -17,13 +17,16 @@ import json
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from app.schemas.advisor import RecommendRequest, AdvisorResponse, ChatRequest
+from app.schemas.coaching import CoachingResponse
 from app.core.advisor.claude_client import ClaudeClient
 from app.core.advisor.prompt_builder import build_recommend_prompt, build_chat_system_prompt
 from app.core.advisor.strategy import parse_strategy_response
+from app.core.advisor.coaching import CoachingAnalyzer
 from app.config import settings
 
 router = APIRouter(prefix="/advisor")
 _client: ClaudeClient | None = None
+_coaching_analyzer: CoachingAnalyzer | None = None
 
 
 def get_client() -> ClaudeClient:
@@ -31,6 +34,13 @@ def get_client() -> ClaudeClient:
     if _client is None:
         _client = ClaudeClient()
     return _client
+
+
+def get_coaching_analyzer() -> CoachingAnalyzer:
+    global _coaching_analyzer
+    if _coaching_analyzer is None:
+        _coaching_analyzer = CoachingAnalyzer(get_client())
+    return _coaching_analyzer
 
 
 @router.post("/recommend", response_model=AdvisorResponse)
@@ -53,6 +63,23 @@ async def recommend(request: RecommendRequest) -> AdvisorResponse:
         return parse_strategy_response(response_text)
     except Exception as e:
         return {"error": "advisor_unavailable", "detail": str(e)}
+
+
+@router.post("/coaching", response_model=CoachingResponse)
+async def coaching(request: RecommendRequest) -> CoachingResponse:
+    """
+    Analyze the user's financial profile for behavioral biases and costly patterns.
+
+    Returns 1-3 structured coaching insights with the detected bias type, a
+    plain-English observation, a quantified impact estimate, and a specific
+    suggestion. Returns an empty insights list gracefully if Claude is unavailable.
+    """
+    try:
+        return await get_coaching_analyzer().analyze(
+            request.profile, request.simulation_result, request.risk_report
+        )
+    except Exception:
+        return CoachingResponse(insights=[])
 
 
 @router.post("/chat")

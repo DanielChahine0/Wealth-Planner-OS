@@ -2,6 +2,49 @@
 import React, { useState } from "react";
 import type { AdvisorResponse, StrategyAction, AssetCategory } from "@/lib/types";
 
+// ─── Human-in-the-Loop Gate Banner ───────────────────────────────────────────
+
+interface HiTLGateProps {
+  reason: string;
+  acknowledged: boolean;
+  onAcknowledge: (v: boolean) => void;
+}
+
+function HiTLGate({ reason, acknowledged, onAcknowledge }: HiTLGateProps) {
+  return (
+    <div
+      className={`mb-3 px-3.5 py-3 border transition-all ${
+        acknowledged
+          ? "border-rim bg-surface/50 opacity-60"
+          : "border-ember/40 bg-ember-bg"
+      }`}
+    >
+      {!acknowledged && (
+        <div className="flex items-start gap-2 mb-2.5">
+          <svg className="w-3.5 h-3.5 text-ember flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+          <div>
+            <p className="text-xs font-mono text-ember tracking-wide mb-0.5">HUMAN REVIEW REQUIRED</p>
+            <p className="text-xs text-mist leading-relaxed">{reason}</p>
+          </div>
+        </div>
+      )}
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={acknowledged}
+          onChange={(e) => onAcknowledge(e.target.checked)}
+          className="accent-ember w-3.5 h-3.5"
+        />
+        <span className="text-xs text-dust font-mono tracking-wide">
+          {acknowledged ? "Acknowledged — consult a licensed advisor" : "I understand this requires professional advice"}
+        </span>
+      </label>
+    </div>
+  );
+}
+
 const CATEGORY_STYLES: Record<AssetCategory, { bg: string; text: string; border: string }> = {
   savings:    { bg: "bg-sage-bg",    text: "text-sage",    border: "border-sage/25" },
   allocation: { bg: "bg-[#0D1A2A]",  text: "text-[#4A7FA5]", border: "border-[#4A7FA5]/25" },
@@ -17,7 +60,9 @@ interface StrategyCardProps {
 }
 
 const StrategyCard = React.memo(function StrategyCard({ action, onToggle }: StrategyCardProps) {
+  const [hitlAcknowledged, setHitlAcknowledged] = useState(false);
   const catStyle = CATEGORY_STYLES[action.category] ?? { bg: "bg-elevated", text: "text-mist", border: "border-rim" };
+  const needsReview = action.requires_human_review && !hitlAcknowledged;
 
   return (
     <div
@@ -26,9 +71,18 @@ const StrategyCard = React.memo(function StrategyCard({ action, onToggle }: Stra
           ? "border-sage/40 bg-sage-bg"
           : action.approved === false
           ? "border-rim bg-elevated opacity-40"
+          : action.requires_human_review && !hitlAcknowledged
+          ? "border-ember/30 bg-ember-bg/30"
           : "border-rim bg-surface hover:border-rim-strong"
       }`}
     >
+      {action.requires_human_review && (
+        <HiTLGate
+          reason={action.human_review_reason ?? "This decision has significant financial consequences that require professional judgment."}
+          acknowledged={hitlAcknowledged}
+          onAcknowledge={setHitlAcknowledged}
+        />
+      )}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5 flex-wrap">
           <span className="font-mono text-xs text-dust">#{action.priority}</span>
@@ -41,8 +95,11 @@ const StrategyCard = React.memo(function StrategyCard({ action, onToggle }: Stra
         <div className="flex gap-2 flex-shrink-0">
           <button
             onClick={() => onToggle(action.id, action.approved === true ? null : true)}
+            disabled={needsReview}
             className={`text-xs px-3 py-1.5 border font-mono tracking-wide transition-all ${
-              action.approved === true
+              needsReview
+                ? "opacity-40 cursor-not-allowed text-dust border-rim"
+                : action.approved === true
                 ? "bg-sage border-sage/50 text-parchment"
                 : "text-dust border-rim hover:border-sage hover:text-sage"
             }`}
@@ -51,8 +108,11 @@ const StrategyCard = React.memo(function StrategyCard({ action, onToggle }: Stra
           </button>
           <button
             onClick={() => onToggle(action.id, action.approved === false ? null : false)}
+            disabled={needsReview}
             className={`text-xs px-3 py-1.5 border font-mono tracking-wide transition-all ${
-              action.approved === false
+              needsReview
+                ? "opacity-40 cursor-not-allowed text-dust border-rim"
+                : action.approved === false
                 ? "bg-elevated border-rim-strong text-mist"
                 : "text-dust border-rim hover:border-rim-strong hover:text-mist"
             }`}

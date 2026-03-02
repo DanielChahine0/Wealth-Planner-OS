@@ -66,6 +66,8 @@ def parse_strategy_response(raw_text: str) -> AdvisorResponse:
                     category=a.get("category", "savings"),
                     projected_impact=a.get("projected_impact", ""),
                     priority=int(a.get("priority", i + 1)),
+                    requires_human_review=bool(a.get("requires_human_review", False)),
+                    human_review_reason=a.get("human_review_reason") or None,
                 )
             )
         # Sort by priority

@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import settings
-from app.api.routes import simulation, risk, advisor, health
+from app.api.routes import simulation, risk, advisor, health, whatif
 
 logging.basicConfig(level=settings.log_level.upper())
 
@@ -27,6 +27,7 @@ app.add_middleware(
 app.include_router(simulation.router, tags=["simulation"])
 app.include_router(risk.router, tags=["risk"])
 app.include_router(advisor.router, tags=["advisor"])
+app.include_router(whatif.router, tags=["whatif"])
 app.include_router(health.router, tags=["health"])
 
 

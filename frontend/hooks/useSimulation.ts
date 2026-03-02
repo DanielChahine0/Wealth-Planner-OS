@@ -1,7 +1,7 @@
 "use client";
 import { useState, useCallback } from "react";
 import { useStore } from "@/lib/store";
-import { runSimulation, analyzeRisk, getRecommendations } from "@/lib/api";
+import { runSimulation, analyzeRisk, getRecommendations, getCoachingInsights } from "@/lib/api";
 import type { UserProfile } from "@/lib/types";
 
 export type SimulationStage =
@@ -9,6 +9,7 @@ export type SimulationStage =
   | "simulating"
   | "analyzing"
   | "recommending"
+  | "coaching"
   | "done"
   | "error";
 
@@ -16,7 +17,7 @@ export function useSimulation() {
   const [stage, setStage] = useState<SimulationStage>("idle");
   const [error, setError] = useState<string | null>(null);
 
-  const { setProfile, setSimulationResult, setRiskReport, setAdvisorResponse } =
+  const { setProfile, setSimulationResult, setRiskReport, setAdvisorResponse, setCoachingResponse } =
     useStore();
 
   const run = useCallback(async (profile: UserProfile) => {
@@ -39,12 +40,22 @@ export function useSimulation() {
       const advisorResp = await getRecommendations(profile, simResult, riskReport);
       setAdvisorResponse(advisorResp);
 
+      // Stage 4: Behavioral finance coaching
+      setStage("coaching");
+      try {
+        const coachingResp = await getCoachingInsights(profile, simResult, riskReport);
+        setCoachingResponse(coachingResp);
+      } catch {
+        // Coaching is non-critical — don't fail the whole pipeline
+        setCoachingResponse({ insights: [] });
+      }
+
       setStage("done");
     } catch (err) {
       setStage("error");
       setError(err instanceof Error ? err.message : "Unknown error");
     }
-  }, [setProfile, setSimulationResult, setRiskReport, setAdvisorResponse]);
+  }, [setProfile, setSimulationResult, setRiskReport, setAdvisorResponse, setCoachingResponse]);
 
   return { run, stage, error };
 }

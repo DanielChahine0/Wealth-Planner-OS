@@ -104,7 +104,9 @@ Respond with a JSON object (no markdown, no code fences) in exactly this format:
       "description": "Specific, actionable description with numbers where possible (2-4 sentences)",
       "category": "savings|allocation|tax|insurance|income|spending",
       "projected_impact": "Quantified impact estimate (e.g., '+$180K median portfolio by retirement')",
-      "priority": 1
+      "priority": 1,
+      "requires_human_review": false,
+      "human_review_reason": null
     }}
   ]
 }}
@@ -115,6 +117,13 @@ Rules:
 - categories must be one of: savings, allocation, tax, insurance, income, spending
 - Avoid generic advice; tailor everything to this client's situation
 - Do NOT include a disclaimer in the JSON (it is added automatically)
+- Set requires_human_review to true (and provide a human_review_reason) for any action involving:
+  * Major asset liquidation or reallocation affecting >20% of the portfolio
+  * Changing retirement timing by more than 3 years
+  * Taking on significant debt (e.g. mortgage, HELOC)
+  * Estate planning, life insurance restructuring, or beneficiary changes
+  * Withdrawing from tax-sheltered accounts before retirement age
+  human_review_reason should be one concise sentence explaining why a human advisor must be consulted.
 """
 
 

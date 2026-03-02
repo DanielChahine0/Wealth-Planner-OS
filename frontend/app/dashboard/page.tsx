@@ -10,7 +10,11 @@ import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { SuccessRateGauge } from "@/components/dashboard/SuccessRateGauge";
 import { RiskPanel } from "@/components/dashboard/RiskPanel";
 import { StrategyCards } from "@/components/dashboard/StrategyCards";
+import { WhatIfBar } from "@/components/dashboard/WhatIfBar";
+import { CoachingPanel } from "@/components/dashboard/CoachingPanel";
+import { useWhatIf } from "@/hooks/useWhatIf";
 import { formatCurrency } from "@/lib/formatters";
+import type { SimulationStage } from "@/hooks/useSimulation";
 
 const SimulationChart = dynamic(
   () => import("@/components/dashboard/SimulationChart").then(m => ({ default: m.SimulationChart })),
@@ -23,6 +27,9 @@ export default function DashboardPage() {
   const simulationResult = useStore((s) => s.simulationResult);
   const riskReport = useStore((s) => s.riskReport);
   const advisorResponse = useStore((s) => s.advisorResponse);
+  const coachingResponse = useStore((s) => s.coachingResponse);
+
+  const whatIf = useWhatIf(profile);
 
   useEffect(() => {
     if (!simulationResult) {
@@ -37,6 +44,9 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  // Determine if coaching is still loading (advisorResponse loaded but coaching not yet)
+  const coachingLoading = !!advisorResponse && !coachingResponse;
 
   return (
     <div className="min-h-screen bg-obsidian">
@@ -86,6 +96,9 @@ export default function DashboardPage() {
               label: "Median at Retirement",
               value: formatCurrency(simulationResult.median_final_value, true),
               sub: "p50 projection",
+              overlay: whatIf.isVisible && whatIf.whatIfSimResult
+                ? formatCurrency(whatIf.whatIfSimResult.median_final_value, true)
+                : null,
             },
             {
               label: "Best Case",
@@ -99,6 +112,11 @@ export default function DashboardPage() {
             >
               <div className="text-xs text-dust tracking-widest uppercase mb-3">{s.label}</div>
               <div className="font-mono text-xl text-parchment mb-1">{s.value}</div>
+              {"overlay" in s && s.overlay && (
+                <div className="font-mono text-sm text-amber-400/80 mb-1">
+                  → {s.overlay} <span className="text-xs text-dust">if scenario</span>
+                </div>
+              )}
               <div className="text-xs text-dust">{s.sub}</div>
             </div>
           ))}
@@ -107,9 +125,22 @@ export default function DashboardPage() {
         {/* Main layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Chart (2/3 width) */}
-          <Card className="lg:col-span-2">
+          <Card className="lg:col-span-2 space-y-4">
+            {/* What-If bar */}
+            <WhatIfBar
+              isLoading={whatIf.isLoading}
+              interpretation={whatIf.interpretation}
+              changesSummary={whatIf.changesSummary}
+              error={whatIf.error}
+              isVisible={whatIf.isVisible}
+              onSubmit={whatIf.runWhatIf}
+              onClear={whatIf.clear}
+            />
             <ErrorBoundary fallback={<div className="p-4 text-sm text-mist">Chart failed to load</div>}>
-              <SimulationChart result={simulationResult} />
+              <SimulationChart
+                result={simulationResult}
+                overlayResult={whatIf.isVisible ? whatIf.whatIfSimResult : null}
+              />
             </ErrorBoundary>
           </Card>
 
@@ -151,6 +182,18 @@ export default function DashboardPage() {
               <LoadingSpinner size="md" message="Claude is generating your personalized strategy..." />
               <p className="text-xs text-dust mt-3">This typically takes 3–5 seconds</p>
             </div>
+          </Card>
+        )}
+
+        {/* Behavioral Finance Coaching */}
+        {(coachingLoading || (coachingResponse && coachingResponse.insights.length > 0)) && (
+          <Card>
+            <ErrorBoundary fallback={null}>
+              <CoachingPanel
+                insights={coachingResponse?.insights ?? []}
+                isLoading={coachingLoading}
+              />
+            </ErrorBoundary>
           </Card>
         )}
       </div>

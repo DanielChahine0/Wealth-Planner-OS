@@ -103,6 +103,8 @@ export interface StrategyAction {
   projected_impact: string;
   priority: number;
   approved: boolean | null;
+  requires_human_review?: boolean;
+  human_review_reason?: string | null;
 }
 
 export interface AdvisorResponse {
@@ -114,4 +116,26 @@ export interface AdvisorResponse {
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+}
+
+export interface WhatIfResponse {
+  modified_profile: UserProfile;
+  interpretation: string;
+  changes_summary: string;
+}
+
+export type BiasSeverity = "high" | "medium" | "low";
+
+export interface CoachingInsight {
+  id: string;
+  bias_type: string;
+  title: string;
+  observation: string;
+  impact: string;
+  suggestion: string;
+  severity: BiasSeverity;
+}
+
+export interface CoachingResponse {
+  insights: CoachingInsight[];
 }

@@ -14,6 +14,8 @@ class StrategyAction(BaseModel):
     projected_impact: str
     priority: int  # 1 = highest
     approved: Optional[bool] = None
+    requires_human_review: bool = False
+    human_review_reason: Optional[str] = None
 
 
 class AdvisorResponse(BaseModel):

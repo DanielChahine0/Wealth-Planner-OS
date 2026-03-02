@@ -15,6 +15,7 @@ import type { SimulationResult } from "@/lib/types";
 
 interface SimulationChartProps {
   result: SimulationResult;
+  overlayResult?: SimulationResult | null;
 }
 
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
@@ -101,7 +102,7 @@ function FanTooltip({ active, payload, label }: any) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function SimulationChart({ result }: SimulationChartProps) {
+export function SimulationChart({ result, overlayResult }: SimulationChartProps) {
   const lastIdx = result.years.length - 1;
   const retirementYear = result.years[lastIdx];
   const p10Final = Math.round(result.percentiles.p10[lastIdx]);
@@ -114,6 +115,7 @@ export function SimulationChart({ result }: SimulationChartProps) {
     const p50 = result.percentiles.p50[i];
     const p75 = result.percentiles.p75[i];
     const p90 = result.percentiles.p90[i];
+    const wi_p50 = overlayResult?.percentiles.p50[i];
     return {
       year,
       // Stored for tooltip only (not rendered as chart series)
@@ -122,6 +124,8 @@ export function SimulationChart({ result }: SimulationChartProps) {
       _p50: Math.round(p50),
       _p75: Math.round(p75),
       _p90: Math.round(p90),
+      // What-if overlay median (amber line)
+      ...(wi_p50 != null ? { _wi_p50: Math.round(wi_p50) } : {}),
       // Stacked band heights (difference between consecutive percentiles)
       bandBase:      Math.max(0, Math.round(p10)),
       bandInnerBot:  Math.max(0, Math.round(p25 - p10)),
@@ -131,7 +135,23 @@ export function SimulationChart({ result }: SimulationChartProps) {
     };
   });
 
-  const yMax = Math.round(p90Final * 1.09);
+  // If overlay has more years, extend data with extra points for the overlay line
+  if (overlayResult && overlayResult.years.length > result.years.length) {
+    for (let i = result.years.length; i < overlayResult.years.length; i++) {
+      const wi_p50 = overlayResult.percentiles.p50[i];
+      data.push({
+        year: overlayResult.years[i],
+        _p10: 0, _p25: 0, _p50: 0, _p75: 0, _p90: 0,
+        _wi_p50: Math.round(wi_p50),
+        bandBase: 0, bandInnerBot: 0, bandCenterBot: 0, bandCenterTop: 0, bandOuterTop: 0,
+      });
+    }
+  }
+
+  const overlayLastIdx = overlayResult ? overlayResult.years.length - 1 : -1;
+  const overlayRetirementYear = overlayResult ? overlayResult.years[overlayLastIdx] : null;
+  const overlayP90Final = overlayResult ? overlayResult.percentiles.p90[overlayLastIdx] : 0;
+  const yMax = Math.round(Math.max(p90Final, overlayP90Final) * 1.09);
 
   return (
     <div>
@@ -351,11 +371,46 @@ export function SimulationChart({ result }: SimulationChartProps) {
             animationEasing="ease-out"
             legendType="none"
           />
+
+          {/* ── What-If overlay: dashed amber median line ── */}
+          {overlayResult && (
+            <Line
+              type="monotone"
+              dataKey="_wi_p50"
+              stroke="#f59e0b"
+              strokeWidth={1.75}
+              strokeDasharray="5 4"
+              dot={false}
+              animationDuration={1200}
+              animationEasing="ease-out"
+              legendType="none"
+              connectNulls={false}
+            />
+          )}
+
+          {/* ── What-If retirement marker (only if different from baseline) ── */}
+          {overlayResult && overlayRetirementYear !== retirementYear && (
+            <ReferenceLine
+              x={overlayRetirementYear!}
+              stroke="rgba(245,158,11,0.25)"
+              strokeDasharray="3 6"
+              strokeWidth={1}
+              label={{
+                value: "RETIRE (IF)",
+                position: "insideTopLeft",
+                fill: "#92680a",
+                fontSize: 8,
+                fontFamily: "monospace",
+                letterSpacing: 1,
+                dy: -4,
+              }}
+            />
+          )}
         </ComposedChart>
       </ResponsiveContainer>
 
       {/* ─── Legend ─────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-center gap-8 mt-5 pb-1">
+      <div className="flex items-center justify-center gap-8 mt-5 pb-1" style={{ flexWrap: "wrap" }}>
         <div className="flex items-center gap-2">
           <div
             className="flex items-center"
@@ -423,6 +478,33 @@ export function SimulationChart({ result }: SimulationChartProps) {
             10TH–90TH
           </span>
         </div>
+
+        {overlayResult && (
+          <div className="flex items-center gap-2">
+            <div
+              className="flex items-center"
+              style={{ width: 28, height: 12, position: "relative" }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  top: "50%",
+                  height: 1.5,
+                  background: "#f59e0b",
+                  transform: "translateY(-50%)",
+                  backgroundImage: "repeating-linear-gradient(90deg, #f59e0b 0, #f59e0b 5px, transparent 5px, transparent 9px)",
+                }}
+              />
+            </div>
+            <span
+              style={{ color: "#92680a", fontSize: "0.6rem", letterSpacing: "0.1em", fontFamily: "monospace" }}
+            >
+              WHAT-IF
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
